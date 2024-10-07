@@ -20,3 +20,8 @@ class SolarPanel:
         power = self.NOMINAL_POWER * (config.solar_irradiance / 1000) * (1 - config.shadow_coefficient) * (
                     1 + self.PMPP * (config.panel_temperature - 25))
         return power
+
+    def generate_power_from_ui(self, solar_irradiance, shadow_coefficient, panel_temperature):
+        power = self.NOMINAL_POWER * (solar_irradiance / 1000) * (1 - shadow_coefficient) * (
+                1 + self.PMPP * (panel_temperature - 25))
+        return power

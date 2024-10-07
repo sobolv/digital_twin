@@ -1,7 +1,7 @@
 import math
 
-from System.charging_interpolation import spline_interpolation
 from System import config
+from System.charging_interpolation import spline_interpolation
 
 
 class Battery:
@@ -17,6 +17,12 @@ class Battery:
     charge_cycles = 0
     charge_summary = 0
 
+    def set_charge_cycles(self, charge_cycles):
+        self.charge_cycles = charge_cycles
+
+    def get_charge_cycles(self):
+        return self.charge_cycles
+
     def charge(self, power: int):
         self.update_actual_capacity()
         self.add_charge_summary(power)
@@ -28,12 +34,12 @@ class Battery:
             else:
                 self.current_charge += power / self.NOMINAL_VOLTAGE
             self.charge_in_percent = (self.current_charge / self.CAPACITY) * 100
-            self.voltage = spline_interpolation(config.battery_charge_voltage_x, config.battery_charge_percentage_y,
+            self.voltage = spline_interpolation(config.battery_charge_percentage_x, config.battery_charge_voltage_y,
                                                 self.charge_in_percent)
-        return self.charge_in_percent, self.voltage
+        return self.charge_in_percent, self.voltage, self.charge_cycles
 
     def add_charge_summary(self, power):
-        self.charge_summary += math.modf(power / self.NOMINAL_VOLTAGE)
+        self.charge_summary += math.fabs(power / self.NOMINAL_VOLTAGE)
 
     def discharge(self, power: int):
         self.update_actual_capacity()
@@ -46,7 +52,7 @@ class Battery:
             else:
                 self.current_charge -= power / self.NOMINAL_VOLTAGE
             self.charge_in_percent = (self.current_charge / self.CAPACITY) * 100
-            self.voltage = spline_interpolation(config.battery_charge_voltage_x, config.battery_charge_percentage_y,
+            self.voltage = spline_interpolation(config.battery_charge_percentage_x, config.battery_charge_voltage_y,
                                                 self.charge_in_percent)
         return self.charge_in_percent, self.voltage
 
@@ -58,4 +64,3 @@ class Battery:
                 self.charge_cycles += 1
             self.charge_summary = 0
         self.CAPACITY *= (1 - (self.charge_cycles * self.degradation_percentage_per_cycle))
-

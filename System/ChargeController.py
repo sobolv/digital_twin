@@ -18,9 +18,14 @@ class ChargeController:
 
     def process(self):
         power = self.solar_panel.generate()
-        charge_in_percent, voltage = self.battery.charge(power)
+        charge_in_percent, voltage, charge_cycles = self.battery.charge(power)
         self.remote_meter.display(voltage, charge_in_percent, power)
         # оновити стан батареї(зарядити її battery.charge(power))
         # вивести інформацію на дісплей
         # (опційно) оппрацювати налаштування контролера
         # print("Generated power: " + str(power) + " Battery: " + str(charge_in_percent) + " Voltage: " + str(voltage))
+
+    def process_from_ui(self, solar_irradiance, shadow_coefficient, panel_temperature):
+        power = self.solar_panel.generate_power_from_ui(solar_irradiance, shadow_coefficient, panel_temperature)
+        charge_in_percent, voltage, charge_cycles = self.battery.charge(power)
+        return power, charge_in_percent, voltage, charge_cycles

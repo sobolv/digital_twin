@@ -22,6 +22,10 @@ class Inverter:
         charge_in_percent, voltage = self.battery.discharge(power)
         # print("Total power: " + str(power) + " Battery: " + str(charge_in_percent) + " Voltage: " + str(voltage))
 
+    def power_with_load(self, current_load):
+        power = current_load * self.MIN_NOMINAL_OUTPUT_VOLTAGE
+        self.battery.discharge(power)
+
     def add_device(self, device: Device):
         self.devices.append(device)
         self.count_total_power()
