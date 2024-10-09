@@ -3,7 +3,7 @@ import math
 from System import config
 from System.charging_interpolation import spline_interpolation
 
-
+# Перегрів батареї
 class Battery:
     NOMINAL_VOLTAGE = 12
     CAPACITY = 40  # Ah

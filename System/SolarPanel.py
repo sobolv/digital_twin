@@ -1,12 +1,14 @@
 from System import config
 
+# Додати кут нахилу панелі
+# Запам'ятовувати старі парметри після виходу з програми
 
 class SolarPanel:
     NOMINAL_POWER = 275
-    SHORT_CIRCUIT_CURRENT = 9.2
-    OPEN_CIRCUIT_POWER = 38.9
+    SHORT_CIRCUIT_CURRENT = 9.2 # Якщо акум в нулі
+    OPEN_CIRCUIT_POWER = 38.9 # Макс напруга в середині панелі
     # MAX_SYSTEM_VOLTAGE = 1000
-    MAX_POINT_CURRENT = 8.7
+    MAX_POINT_CURRENT = 8.7 # Макс для зарядки акуму
     MAX_POINT_VOLTAGE = 31.6
     # MAX_REVERSE_CURRENT = 20
     NOCT = 45
