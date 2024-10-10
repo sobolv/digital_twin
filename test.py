@@ -57,7 +57,7 @@ class SolarBatteryApp:
 
         # Left container (inputs and sliders)
         left_container1 = ttk.Frame(pane1, style="Custom.TFrame", width=300)
-        # left_container1.pack_propagate(False)
+        left_container1.pack_propagate(False)
         pane1.add(left_container1)
 
         # Сонячна панель section
