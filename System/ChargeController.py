@@ -25,7 +25,10 @@ class ChargeController:
         # (опційно) оппрацювати налаштування контролера
         # print("Generated power: " + str(power) + " Battery: " + str(charge_in_percent) + " Voltage: " + str(voltage))
 
-    def process_from_ui(self, solar_irradiance, shadow_coefficient, panel_temperature):
-        power = self.solar_panel.generate_power_from_ui(solar_irradiance, shadow_coefficient, panel_temperature)
+    def process_from_ui(self, solar_irradiance, shadow_coefficient, panel_temperature, time_delta):
+        print(f"Incoming parameters -> Solar Irradiance: {solar_irradiance}, Shadow Coefficient: {shadow_coefficient}, Panel Temperature: {panel_temperature}")
+        power = self.solar_panel.generate_power_from_ui(solar_irradiance, shadow_coefficient, panel_temperature, time_delta)
+        print(f"Generated Power: {power}")
         charge_in_percent, voltage, charge_cycles = self.battery.charge(power)
+        print(f"Battery Status -> Charge in Percent: {charge_in_percent}, Voltage: {voltage}, Charge Cycles: {charge_cycles}")
         return power, charge_in_percent, voltage, charge_cycles

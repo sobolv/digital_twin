@@ -1,11 +1,10 @@
 import threading
+from datetime import datetime, timedelta
 
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
 import ttkbootstrap as ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from ttkbootstrap.constants import *
-from datetime import datetime, timedelta
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 from ttkbootstrap.widgets import DateEntry
 
 font_size = 10
@@ -17,12 +16,13 @@ from System.Inverter import Inverter
 from System.RemoteMeter import RemoteMeter
 from System.SolarPanel import SolarPanel
 
+
 class SolarBatteryApp:
     def __init__(self, root):
         self.plot_x_array: list = list()
         self.plot_y_array: list = list()
         self.root = root
-        self.root.title("Tkinter Layout with Tabs")
+        self.root.title("Цифровий двійник лабораторного стенду сонячної панелі")
 
         self.stop_event = threading.Event()
 
@@ -61,15 +61,20 @@ class SolarBatteryApp:
         pane1.add(left_container1)
 
         # Сонячна панель section
-        ttk.Label(left_container1, text="Сонячна панель", font=(font_name, font_size), foreground="white", background="#7D8A8B").pack(pady=5)
+        ttk.Label(left_container1, text="Сонячна панель", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
 
         # Option menu for units
-        self.solar_unit_var = ttk.StringVar(value="hour")
-        self.solar_unit_menu = ttk.OptionMenu(left_container1, self.solar_unit_var, "hour", "hour", "minute", "second")
+        ttk.Label(left_container1, text="Одиниця виміру часу", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
+        self.solar_unit_var = ttk.StringVar(value="година")
+        self.solar_unit_menu = ttk.OptionMenu(left_container1, self.solar_unit_var, "година", "година", "хвилина",
+                                              "секунда")
         self.solar_unit_menu.pack(pady=5)
 
         # Number input for solar irradiance
-        ttk.Label(left_container1, text="Сонячна ірадіація, Вт", font=(font_name, font_size), foreground="white", background="#7D8A8B").pack(pady=5)
+        ttk.Label(left_container1, text="Сонячна ірадіація, Вт", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
         self.solar_irradiance_var = ttk.StringVar()
         solar_irradiance_entry = ttk.Entry(left_container1, textvariable=self.solar_irradiance_var)
         solar_irradiance_entry.pack(pady=5)
@@ -78,43 +83,59 @@ class SolarBatteryApp:
         scale_style.configure("Custom.Horizontal.TScale", background="#7D8A8B")
 
         # Slider for shade on panel
-        ttk.Label(left_container1, text="Кількість тіні на панелі, %", font=(font_name, font_size), foreground="white", background="#7D8A8B").pack(pady=5)
+        ttk.Label(left_container1, text="Кількість тіні на панелі, %", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
         self.shade_var = ttk.DoubleVar(value=0)
-        shade_slider = ttk.Scale(left_container1, from_=0, to=100, orient=ttk.HORIZONTAL, variable=self.shade_var, style="Custom.Horizontal.TScale")
+        shade_slider = ttk.Scale(left_container1, from_=0, to=100, orient=ttk.HORIZONTAL, variable=self.shade_var,
+                                 style="Custom.Horizontal.TScale")
         shade_slider.pack(pady=5)
 
         # Number input for panel temperature
-        ttk.Label(left_container1, text="Температура панелі, градуси цельсію", font=(font_name, font_size), foreground="white", background="#7D8A8B").pack(pady=5)
+        ttk.Label(left_container1, text="Температура панелі, градуси цельсію", font=(font_name, font_size),
+                  foreground="white", background="#7D8A8B").pack(pady=5)
         self.panel_temp_var = ttk.StringVar()
         panel_temp_entry = ttk.Entry(left_container1, textvariable=self.panel_temp_var)
         panel_temp_entry.pack(pady=5)
 
         # Акумулятор section
-        ttk.Label(left_container1, text="Акумулятор", font=(font_name, font_size), foreground="white", background="#7D8A8B").pack(pady=5)
+        ttk.Label(left_container1, text="Акумулятор", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
 
         # Number input for charge cycles
-        ttk.Label(left_container1, text="Кількість циклів заряду", font=(font_name, font_size), foreground="white", background="#7D8A8B").pack(pady=5)
+        ttk.Label(left_container1, text="Кількість циклів заряду", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
         self.charge_cycles_var = ttk.StringVar()
         self.charge_cycles_entry = ttk.Entry(left_container1, textvariable=self.charge_cycles_var)
         self.charge_cycles_entry.pack(pady=5)
 
         # Labels for battery voltage and charge
-        self.voltage_label = ttk.Label(left_container1, text="Напруга акумулятора, %", font=(font_name, font_size), foreground="white", background="#7D8A8B")
+        self.power_label = ttk.Label(left_container1, text="Генерація панелі, Вт", font=(font_name, font_size),
+                                     foreground="white", background="#7D8A8B")
+        self.power_label.pack(pady=5)
+        self.voltage_label = ttk.Label(left_container1, text="Напруга акумулятора, %", font=(font_name, font_size),
+                                       foreground="white", background="#7D8A8B")
         self.voltage_label.pack(pady=5)
-        self.charge_label = ttk.Label(left_container1, text="Заряд акумулятора, %", font=(font_name, font_size), foreground="white", background="#7D8A8B")
+        self.charge_label = ttk.Label(left_container1, text="Заряд акумулятора, %", font=(font_name, font_size),
+                                      foreground="white", background="#7D8A8B")
         self.charge_label.pack(pady=5)
 
         # Навантаження section
-        ttk.Label(left_container1, text="Навантаження", font=(font_name, font_size), foreground="white", background="#7D8A8B").pack(pady=5)
+        ttk.Label(left_container1, text="Навантаження", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
 
         # Number input for load
-        ttk.Label(left_container1, text="Постійне навантаження, А", font=(font_name, font_size), foreground="white", background="#7D8A8B").pack(pady=5)
+        ttk.Label(left_container1, text="Постійне навантаження, А", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
+        self.current_draw = ttk.Label(left_container1, text="Споживання, Вт", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B")
+        self.current_draw.pack(pady=5)
         self.load_var = ttk.StringVar()
         load_entry = ttk.Entry(left_container1, textvariable=self.load_var)
         load_entry.pack(pady=5)
 
         # Error label
-        self.error_label = ttk.Label(left_container1, text="", font=(font_name, font_size), background="#7D8A8B", foreground="red")
+        self.error_label = ttk.Label(left_container1, text="", font=(font_name, font_size), background="#7D8A8B",
+                                     foreground="red")
         self.error_label.pack(pady=10)
 
         # Buttons
@@ -130,7 +151,6 @@ class SolarBatteryApp:
         # Right container (single graph)
         right_container1 = ttk.Frame(pane1)
         pane1.add(right_container1)
-
 
         self.canvas1 = FigureCanvasTkAgg(self.fig, master=right_container1)
         self.canvas1.get_tk_widget().pack(side=ttk.TOP, fill=ttk.BOTH, expand=True)
@@ -152,35 +172,42 @@ class SolarBatteryApp:
         left_container2.pack_propagate(False)
         pane2.add(left_container2)
 
-        ttk.Label(left_container2, text="Select Date 1", font=(font_name, font_size), foreground="white", background="#7D8A8B").pack(pady=5)
+        ttk.Label(left_container2, text="Select Date 1", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
         self.date1 = DateEntry(left_container2, bootstyle="info")
         self.date1.pack(pady=5)
 
-        ttk.Label(left_container2, text="Select Date 2", font=(font_name, font_size), foreground="white", background="#7D8A8B").pack(pady=5)
+        ttk.Label(left_container2, text="Select Date 2", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
         self.date2 = DateEntry(left_container2, bootstyle="info")
         self.date2.pack(pady=5)
 
-        ttk.Label(left_container2, text="Hour (0-23) for Date 1", font=(font_name, font_size), foreground="white", background="#7D8A8B").pack(pady=5)
+        ttk.Label(left_container2, text="Hour (0-23) for Date 1", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
         self.hour1 = ttk.Entry(left_container2)
         self.hour1.pack(pady=5)
 
-        ttk.Label(left_container2, text="Minutes (0-59) for Date 1", font=(font_name, font_size), foreground="white", background="#7D8A8B").pack(pady=5)
+        ttk.Label(left_container2, text="Minutes (0-59) for Date 1", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
         self.minute1 = ttk.Entry(left_container2)
         self.minute1.pack(pady=5)
 
-        ttk.Label(left_container2, text="Hour (0-23) for Date 2", font=(font_name, font_size), foreground="white", background="#7D8A8B").pack(pady=5)
+        ttk.Label(left_container2, text="Hour (0-23) for Date 2", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
         self.hour2 = ttk.Entry(left_container2)
         self.hour2.pack(pady=5)
 
-        ttk.Label(left_container2, text="Minutes (0-59) for Date 2", font=(font_name, font_size), foreground="white", background="#7D8A8B").pack(pady=5)
+        ttk.Label(left_container2, text="Minutes (0-59) for Date 2", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
         self.minute2 = ttk.Entry(left_container2)
         self.minute2.pack(pady=5)
 
-        self.error_label_tab2 = ttk.Label(left_container2, text="", font=(font_name, font_size), background="#7D8A8B", foreground="red")
+        self.error_label_tab2 = ttk.Label(left_container2, text="", font=(font_name, font_size), background="#7D8A8B",
+                                          foreground="red")
         self.error_label_tab2.pack(pady=10)
 
         btn_validate = ttk.Button(left_container2, text="Validate & Draw Chart",
-                                 command=lambda: None)  # Placeholder command
+                                  command=lambda: None)  # Placeholder command
         btn_validate.pack(pady=10)
 
         # Right container (matplotlib chart)
@@ -210,25 +237,33 @@ class SolarBatteryApp:
 
             # Convert time unit
             chosen_time_unit = self.solar_unit_var.get()
-            if chosen_time_unit == "hour":
-                time_delta = 3600
-                self.current_time += timedelta(hours=time_delta)
-            elif chosen_time_unit == "minute":
-                time_delta = 60
-                self.current_time += timedelta(minutes=time_delta)
-            else:
+            if chosen_time_unit == "година":
                 time_delta = 1
-                self.current_time += timedelta(seconds=time_delta)
-
-            self.plot_x_array.append(self.current_time)
+                self.current_time += timedelta(hours=1)
+            elif chosen_time_unit == "хвилина":
+                time_delta = 60
+                self.current_time += timedelta(minutes=1)
+            else:
+                time_delta = 3600
+                self.current_time += timedelta(seconds=1)
 
             power, charge_in_percent, voltage, charge_cycles_return = self.controller.process_from_ui(solar_irradiance,
-                                                                                                      shade, panel_temp)
-            self.inverter.power_with_load(load)
+                                                                                                      shade, panel_temp, time_delta)
+            power_draw, charge_in_percent, voltage = self.inverter.power_with_load(load, time_delta)
+
+            self.plot_x_array.append(self.current_time)
             self.plot_y_array.append(charge_in_percent)
+
+            # Check if the length exceeds the limit, remove the oldest data if necessary
+            max_points = 50
+            if len(self.plot_x_array) > max_points:
+                self.plot_x_array.pop(0)  # Remove the first (oldest) element from the x array
+                self.plot_y_array.pop(0)  # Remove the first (oldest) element from the y array
             # Perform calculation and update the UI
+            self.power_label.config(text="Генерація панелі: " + str(power) + " Вт")
             self.voltage_label.config(text="Напруга: " + str(voltage) + "V")
             self.charge_label.config(text="Заряд: " + str(charge_in_percent) + "%")
+            self.current_draw.config(text="Споживання " + str(power_draw) + "Вт")
             # self.charge_cycles_entry.insert(0, charge_cycles_return)
 
             self.error_label.config(text="")  # Clear previous error message
@@ -236,10 +271,13 @@ class SolarBatteryApp:
             # Update the graph
             self.ax.clear()  # Clear the previous graph but keep the axes
             self.ax.plot(self.plot_x_array, self.plot_y_array)
-            self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+            self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
             for label in self.ax.get_xticklabels():
                 label.set_rotation(90)
 
+            # Maintain the scale by setting the limits manually
+            self.ax.set_xlim([self.plot_x_array[0], self.plot_x_array[-1]])  # Adjust x-axis limits to the current data range
+            self.ax.set_ylim([-10, 110])  # Adjust y-axis limits, assuming charge_in_percent is between 0 and 100
             # Use tight_layout to avoid label overlap
             self.fig.tight_layout()
             self.canvas1.draw()
@@ -251,13 +289,12 @@ class SolarBatteryApp:
         except Exception as e:
             self.error_label.config(text=f"Error: {str(e)}")
 
-
     def stop_update(self):
         self.stop_event.set()
 
     def clear_graph(self):
         self.ax.clear()  # Clear the data but leave the axes
-        self.ax.set_title("Graph cleared")  # Optionally, show some placeholder message
+        self.ax.set_title("Графік очищено")  # Optionally, show some placeholder message
         self.canvas1.draw()
         self.error_label.config(text="")  # Clear previous error message
         self.plot_x_array = []
