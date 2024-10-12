@@ -1,6 +1,8 @@
 import random
 from datetime import datetime, timedelta
 
+from System.SolarPanel import SolarPanel
+
 
 class MonthToMinMaxIrradiation:
     def __init__(self, month: str, min_irr_1: float, min_irr_2: float, max_irr_1: float, max_irr_2: float, sunrise: str,
@@ -95,6 +97,8 @@ delta_value = 60  # 60 minutes
 dates_with_irradiance = generate_dates_with_irradiance(start_date, end_date, delta_type='minutes',
                                                        delta_value=delta_value)
 
+sp = SolarPanel()
 # Print result
 for date, irradiance in dates_with_irradiance.items():
-    print(f"{date}: {irradiance:.4f}")
+    power = sp.generate_power_from_ui(irradiance * 1000, 0.1, 25, 1)
+    print(f"{date}: {irradiance:.4f} {power:.4f}")

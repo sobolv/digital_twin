@@ -7,6 +7,8 @@ import ttkbootstrap as ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from ttkbootstrap.widgets import DateEntry
 
+from System.devices import HairDryer, Fridge, Lamp, Microwave, TV, Kettle
+
 font_size = 10
 font_name = "Roboto"
 
@@ -19,6 +21,7 @@ from System.SolarPanel import SolarPanel
 
 class SolarBatteryApp:
     def __init__(self, root):
+        self.device_list = list()
         self.plot_x_array: list = list()
         self.plot_y_array: list = list()
         self.root = root
@@ -126,8 +129,9 @@ class SolarBatteryApp:
         # Number input for load
         ttk.Label(left_container1, text="Постійне навантаження, А", font=(font_name, font_size), foreground="white",
                   background="#7D8A8B").pack(pady=5)
-        self.current_draw = ttk.Label(left_container1, text="Споживання, Вт", font=(font_name, font_size), foreground="white",
-                  background="#7D8A8B")
+        self.current_draw = ttk.Label(left_container1, text="Споживання, Вт", font=(font_name, font_size),
+                                      foreground="white",
+                                      background="#7D8A8B")
         self.current_draw.pack(pady=5)
         self.load_var = ttk.StringVar()
         load_entry = ttk.Entry(left_container1, textvariable=self.load_var)
@@ -160,62 +164,188 @@ class SolarBatteryApp:
         self.update_calculations()
 
     def setup_tab2_ui(self):
-        style = ttk.Style()
-        style.configure("Custom.TFrame", background="#7D8A8B")
-
-        # Split pane for Tab 2
         pane2 = ttk.PanedWindow(self.tab2, orient=ttk.HORIZONTAL)
         pane2.pack(fill='both', expand=True)
 
-        # Left container (date pickers and time fields)
+        # Left container (date picker, sliders, etc.)
         left_container2 = ttk.Frame(pane2, style="Custom.TFrame", width=300)
         left_container2.pack_propagate(False)
         pane2.add(left_container2)
 
-        ttk.Label(left_container2, text="Select Date 1", font=(font_name, font_size), foreground="white",
+        # Start date label and picker
+        ttk.Label(left_container2, text="Start Date (YYYY-MM-DD HH:MM)", font=(font_name, font_size),
+                  foreground="white", background="#7D8A8B").pack(pady=5)
+        self.start_date = DateEntry(left_container2, bootstyle="info", width=20)
+        self.start_date.pack(pady=5)
+        self.start_time = ttk.Entry(left_container2, width=10)
+        self.start_time.pack(pady=5)
+        self.start_time.insert(0, "00:00")  # Default time
+
+        # Shadow coefficient slider
+        ttk.Label(left_container2, text="Shadow Coefficient", font=(font_name, font_size), foreground="white",
                   background="#7D8A8B").pack(pady=5)
-        self.date1 = DateEntry(left_container2, bootstyle="info")
-        self.date1.pack(pady=5)
+        self.shadow_var = ttk.DoubleVar(value=0)
+        self.shadow_slider = ttk.Scale(left_container2, from_=0, to=100, orient=ttk.HORIZONTAL,
+                                       variable=self.shadow_var,
+                                       style="Custom.Horizontal.TScale")
+        self.shadow_slider.pack(pady=5)
 
-        ttk.Label(left_container2, text="Select Date 2", font=(font_name, font_size), foreground="white",
+        # Panel temperature input
+        ttk.Label(left_container2, text="Panel Temperature (°C)", font=(font_name, font_size), foreground="white",
                   background="#7D8A8B").pack(pady=5)
-        self.date2 = DateEntry(left_container2, bootstyle="info")
-        self.date2.pack(pady=5)
+        self.panel_temp2_var = ttk.StringVar()
+        panel_temp2_entry = ttk.Entry(left_container2, textvariable=self.panel_temp2_var)
+        panel_temp2_entry.pack(pady=5)
 
-        ttk.Label(left_container2, text="Hour (0-23) for Date 1", font=(font_name, font_size), foreground="white",
-                  background="#7D8A8B").pack(pady=5)
-        self.hour1 = ttk.Entry(left_container2)
-        self.hour1.pack(pady=5)
+        # Devices section
+        ttk.Label(left_container2, text="Devices", font=(font_name, font_size, 'bold'), foreground="white",
+                  background="#7D8A8B").pack(pady=10)
 
-        ttk.Label(left_container2, text="Minutes (0-59) for Date 1", font=(font_name, font_size), foreground="white",
-                  background="#7D8A8B").pack(pady=5)
-        self.minute1 = ttk.Entry(left_container2)
-        self.minute1.pack(pady=5)
+        # Container for device inputs and buttons
+        devices_frame = ttk.Frame(left_container2, style="Custom.TFrame")
+        devices_frame.pack(pady=5)
 
-        ttk.Label(left_container2, text="Hour (0-23) for Date 2", font=(font_name, font_size), foreground="white",
-                  background="#7D8A8B").pack(pady=5)
-        self.hour2 = ttk.Entry(left_container2)
-        self.hour2.pack(pady=5)
+        # Hair Dryer input
+        ttk.Label(devices_frame, text="Hair Dryer", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").grid(row=0, column=0, pady=5)
+        ttk.Label(devices_frame, text="Temperature", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").grid(row=0, column=1)
+        self.hairdryer_temp_var = ttk.StringVar(value="1")
+        self.hairdryer_temp = ttk.Combobox(devices_frame, textvariable=self.hairdryer_temp_var, values=["1", "2", "3"],
+                                           width=5, state="readonly")
+        self.hairdryer_temp.grid(row=0, column=2)
 
-        ttk.Label(left_container2, text="Minutes (0-59) for Date 2", font=(font_name, font_size), foreground="white",
-                  background="#7D8A8B").pack(pady=5)
-        self.minute2 = ttk.Entry(left_container2)
-        self.minute2.pack(pady=5)
+        ttk.Label(devices_frame, text="Speed", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").grid(row=0, column=3)
+        self.hairdryer_speed_var = ttk.StringVar(value="1")
+        self.hairdryer_speed = ttk.Combobox(devices_frame, textvariable=self.hairdryer_speed_var, values=["1", "2"],
+                                            width=5, state="readonly")
+        self.hairdryer_speed.grid(row=0, column=4)
 
-        self.error_label_tab2 = ttk.Label(left_container2, text="", font=(font_name, font_size), background="#7D8A8B",
-                                          foreground="red")
-        self.error_label_tab2.pack(pady=10)
+        ttk.Button(devices_frame, text="+", command=self.add_hairdryer).grid(row=0, column=5, padx=5)
 
-        btn_validate = ttk.Button(left_container2, text="Validate & Draw Chart",
-                                  command=lambda: None)  # Placeholder command
-        btn_validate.pack(pady=10)
+        # Fridge input
+        ttk.Label(devices_frame, text="Fridge", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").grid(row=1, column=0, pady=5)
+        ttk.Button(devices_frame, text="+", command=self.add_fridge).grid(row=1, column=5, padx=5)
 
-        # Right container (matplotlib chart)
+        # Lamp input
+        ttk.Label(devices_frame, text="Lamp", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").grid(row=2, column=0, pady=5)
+        ttk.Button(devices_frame, text="+", command=self.add_lamp).grid(row=2, column=5, padx=5)
+
+        # Microwave input
+        ttk.Label(devices_frame, text="Microwave", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").grid(row=3, column=0, pady=5)
+        self.microwave_power_var = ttk.StringVar(value="120")
+        self.microwave_power = ttk.Combobox(devices_frame, textvariable=self.microwave_power_var,
+                                            values=["120", "250", "380", "500", "700"], width=5, state="readonly")
+        self.microwave_power.grid(row=3, column=2)
+        ttk.Button(devices_frame, text="+", command=self.add_microwave).grid(row=3, column=5, padx=5)
+
+        # TV input
+        ttk.Label(devices_frame, text="TV", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").grid(row=4, column=0, pady=5)
+        ttk.Button(devices_frame, text="+", command=self.add_tv).grid(row=4, column=5, padx=5)
+
+        # Kettle input
+        ttk.Label(devices_frame, text="Kettle", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").grid(row=5, column=0, pady=5)
+        ttk.Label(devices_frame, text="Amount of Water", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").grid(row=5, column=1)
+        self.kettle_water_amount_var = ttk.StringVar()
+        self.kettle_water_amount = ttk.Entry(devices_frame, textvariable=self.kettle_water_amount_var, width=5)
+        self.kettle_water_amount.grid(row=5, column=2)
+
+        ttk.Label(devices_frame, text="Start Temp (°C)", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").grid(row=5, column=3)
+        self.kettle_start_temp_var = ttk.StringVar()
+        self.kettle_start_temp = ttk.Entry(devices_frame, textvariable=self.kettle_start_temp_var, width=5)
+        self.kettle_start_temp.grid(row=5, column=4)
+
+        ttk.Button(devices_frame, text="+", command=self.add_kettle).grid(row=5, column=5, padx=5)
+
+        # Buttons
+        btn_calculate_tab2 = ttk.Button(left_container2, text="Calculate", command=self.calculate_tab2)
+        btn_calculate_tab2.pack(pady=10)
+
+        btn_clear_tab2 = ttk.Button(left_container2, text="Clear Chart", command=self.clear_graph_tab2)
+        btn_clear_tab2.pack(pady=5)
+
+        btn_stop_tab2 = ttk.Button(left_container2, text="Stop", command=self.stop_update_tab2)
+        btn_stop_tab2.pack(pady=5)
+
+        # Right container (graph and dynamic buttons for devices)
         right_container2 = ttk.Frame(pane2)
         pane2.add(right_container2)
 
         self.canvas2 = FigureCanvasTkAgg(self.fig2, master=right_container2)
         self.canvas2.get_tk_widget().pack(side=ttk.TOP, fill=ttk.BOTH, expand=True)
+
+        # Device buttons
+        self.device_buttons_frame = ttk.Frame(right_container2)
+        self.device_buttons_frame.pack(side=ttk.BOTTOM, fill=ttk.X)
+
+    def add_hairdryer(self):
+        temperature = int(self.hairdryer_temp_var.get())
+        speed = int(self.hairdryer_speed_var.get())
+        hairdryer = HairDryer(temperature, speed)
+        self.device_list.append(hairdryer)
+        self.update_device_buttons()
+
+    def add_fridge(self):
+        fridge = Fridge()
+        self.device_list.append(fridge)
+        self.update_device_buttons()
+
+    def add_lamp(self):
+        lamp = Lamp()
+        self.device_list.append(lamp)
+        self.update_device_buttons()
+
+    def add_microwave(self):
+        power = int(self.microwave_power_var.get())
+        microwave = Microwave(power)
+        self.device_list.append(microwave)
+        self.update_device_buttons()
+
+    def add_tv(self):
+        tv = TV()
+        self.device_list.append(tv)
+        self.update_device_buttons()
+
+    def add_kettle(self):
+        water_amount = int(self.kettle_water_amount_var.get())
+        start_temp = int(self.kettle_start_temp_var.get())
+        kettle = Kettle(water_amount, start_temp)
+        self.device_list.append(kettle)
+        self.update_device_buttons()
+
+    def update_device_buttons(self):
+        # Clear the current buttons
+        for widget in self.device_buttons_frame.winfo_children():
+            widget.destroy()
+
+        # Add a button for each device in the list
+        for i, device in enumerate(self.device_list):
+            btn = ttk.Button(self.device_buttons_frame, text=str(device), command=lambda i=i: self.remove_device(i))
+            btn.pack(side=ttk.LEFT, padx=5)
+
+    def remove_device(self, index):
+        del self.device_list[index]
+        self.update_device_buttons()
+
+    def calculate_tab2(self):
+        # Implement the chart drawing logic
+        pass
+
+    def clear_graph_tab2(self):
+        # Implement the graph clearing logic
+        pass
+
+    def stop_update_tab2(self):
+        # Implement the stop updating logic
+        pass
 
     def update_calculations(self):
         try:
@@ -248,7 +378,8 @@ class SolarBatteryApp:
                 self.current_time += timedelta(seconds=1)
 
             power, charge_in_percent, voltage, charge_cycles_return = self.controller.process_from_ui(solar_irradiance,
-                                                                                                      shade, panel_temp, time_delta)
+                                                                                                      shade, panel_temp,
+                                                                                                      time_delta)
             power_draw, charge_in_percent, voltage = self.inverter.power_with_load(load, time_delta)
 
             self.plot_x_array.append(self.current_time)
@@ -276,7 +407,8 @@ class SolarBatteryApp:
                 label.set_rotation(90)
 
             # Maintain the scale by setting the limits manually
-            self.ax.set_xlim([self.plot_x_array[0], self.plot_x_array[-1]])  # Adjust x-axis limits to the current data range
+            self.ax.set_xlim(
+                [self.plot_x_array[0], self.plot_x_array[-1]])  # Adjust x-axis limits to the current data range
             self.ax.set_ylim([-10, 110])  # Adjust y-axis limits, assuming charge_in_percent is between 0 and 100
             # Use tight_layout to avoid label overlap
             self.fig.tight_layout()

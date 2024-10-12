@@ -2,10 +2,15 @@ import random
 
 from System import config
 
+
 class HairDryer:
     POWER = 2100
 
-    def power_on(self, temperature: int, speed: int):
+    def __init__(self, temperature: int, speed: int):
+        self.temperature = temperature
+        self.speed = speed
+
+    def power_on(self):
         power_map = {
             (1, 1): 700,
             (2, 1): 1000,
@@ -14,8 +19,7 @@ class HairDryer:
             (2, 2): 1500,
             (3, 2): self.POWER,
         }
-        return power_map.get((temperature, speed))/config.time_delta
-
+        return power_map.get((self.temperature, self.speed)) / config.time_delta
 
 
 class Fridge:
@@ -23,8 +27,8 @@ class Fridge:
     NOMINAL_POWER = 476
     MIN_START_POWER = 500
     MAX_START_POWER = 1000
-    MIN_START_TIME = 1 #seconds
-    MAX_START_TIME = 2 #seconds
+    MIN_START_TIME = 1  #seconds
+    MAX_START_TIME = 2  #seconds
 
     def __init__(self):
         self.current_time = 0
@@ -49,15 +53,18 @@ class Lamp:
     NOMINAL_POWER = 8
 
     def power_on(self):
-        return self.NOMINAL_POWER/config.time_delta
+        return self.NOMINAL_POWER / config.time_delta
 
 
 class Microwave:
     MODEL = "Samsung MW3000AM MS20A3010AL"
     MODE = {120, 250, 380, 500, 700}
 
+    def __init__(self, mode: int):
+        self.mode = mode
+
     def power_on(self, mode: int):
-        return mode/config.time_delta
+        return mode / config.time_delta
 
 
 class TV:
@@ -67,7 +74,7 @@ class TV:
     STAND_BY_MODE_POWER = 0.5
 
     def power_on(self):
-        return random.randint(self.NOMINAL_POWER, self.MAX_POWER)/config.time_delta
+        return random.randint(self.NOMINAL_POWER, self.MAX_POWER) / config.time_delta
 
 
 class Kettle:
@@ -77,7 +84,7 @@ class Kettle:
     start_temperature = 20
 
     def __init__(self, amount_of_water: int, start_temperature: int):
-        self.time = (4.186 * amount_of_water * (100 - start_temperature))/self.NOMINAL_POWER
+        self.time = (4.186 * amount_of_water * (100 - start_temperature)) / self.NOMINAL_POWER
         self.current_time = 0
 
     def power_on(self):
@@ -88,7 +95,7 @@ class Kettle:
                 self.current_time += 1
             elif config.time_delta == 1:
                 self.current_time += 3600
-            return self.NOMINAL_POWER/config.time_delta
+            return self.NOMINAL_POWER / config.time_delta
         return 0
 
 
