@@ -64,7 +64,7 @@ class SolarBatteryApp:
         pane1.add(left_container1)
 
         # Сонячна панель section
-        ttk.Label(left_container1, text="Сонячна панель", font=(font_name, font_size), foreground="white",
+        ttk.Label(left_container1, text="Сонячна панель", font=(font_name, font_size, 'bold'), foreground="white",
                   background="#7D8A8B").pack(pady=5)
 
         # Option menu for units
@@ -81,6 +81,18 @@ class SolarBatteryApp:
         self.solar_irradiance_var = ttk.StringVar()
         solar_irradiance_entry = ttk.Entry(left_container1, textvariable=self.solar_irradiance_var)
         solar_irradiance_entry.pack(pady=5)
+
+        ttk.Label(left_container1, text="Кут нахилу сонячних променів, °", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
+        self.sun_ray_angle_var = ttk.StringVar()
+        sun_ray_angle_entry = ttk.Entry(left_container1, textvariable=self.sun_ray_angle_var)
+        sun_ray_angle_entry.pack(pady=5)
+
+        ttk.Label(left_container1, text="Кут нахилу панелі, °", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
+        self.panel_angle_var = ttk.StringVar()
+        panel_angle_entry = ttk.Entry(left_container1, textvariable=self.panel_angle_var)
+        panel_angle_entry.pack(pady=5)
 
         scale_style = ttk.Style()
         scale_style.configure("Custom.Horizontal.TScale", background="#7D8A8B")
@@ -101,7 +113,7 @@ class SolarBatteryApp:
         panel_temp_entry.pack(pady=5)
 
         # Акумулятор section
-        ttk.Label(left_container1, text="Акумулятор", font=(font_name, font_size), foreground="white",
+        ttk.Label(left_container1, text="Акумулятор", font=(font_name, font_size, 'bold'), foreground="white",
                   background="#7D8A8B").pack(pady=5)
 
         # Number input for charge cycles
@@ -125,14 +137,15 @@ class SolarBatteryApp:
         # Навантаження section
         ttk.Label(left_container1, text="Навантаження", font=(font_name, font_size), foreground="white",
                   background="#7D8A8B").pack(pady=5)
-
-        # Number input for load
-        ttk.Label(left_container1, text="Постійне навантаження, А", font=(font_name, font_size), foreground="white",
-                  background="#7D8A8B").pack(pady=5)
         self.current_draw = ttk.Label(left_container1, text="Споживання, Вт", font=(font_name, font_size),
                                       foreground="white",
                                       background="#7D8A8B")
         self.current_draw.pack(pady=5)
+        # Number input for load
+        ttk.Label(left_container1, text="Постійне навантаження, А", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
+
+
         self.load_var = ttk.StringVar()
         load_entry = ttk.Entry(left_container1, textvariable=self.load_var)
         load_entry.pack(pady=5)
@@ -365,6 +378,14 @@ class SolarBatteryApp:
             if load < 0:
                 raise ValueError("Постійне навантаження повинно бути >= 0.")
 
+            sun_ray_angle = float(self.sun_ray_angle_var.get())
+            if(sun_ray_angle < 0):
+                raise ValueError("Кут нахилу сонячних променів повинен бути >= 0.")
+
+            panel_angle = float(self.panel_angle_var.get())
+            if panel_angle < 0:
+                raise ValueError("Кут нахилу панелі повинен бути >= 0.")
+
             # Convert time unit
             chosen_time_unit = self.solar_unit_var.get()
             if chosen_time_unit == "година":
@@ -379,7 +400,9 @@ class SolarBatteryApp:
 
             power, charge_in_percent, voltage, charge_cycles_return = self.controller.process_from_ui(solar_irradiance,
                                                                                                       shade, panel_temp,
-                                                                                                      time_delta)
+                                                                                                      time_delta,
+                                                                                                      sun_ray_angle,
+                                                                                                      panel_angle)
             power_draw, charge_in_percent, voltage = self.inverter.power_with_load(load, time_delta)
 
             self.plot_x_array.append(self.current_time)

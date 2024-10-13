@@ -109,7 +109,7 @@ start_date = '2024-10-06 04:00'
 end_date = '2024-10-07 20:00'
 delta_value = 60  # 60 minutes
 
-dates_with_irradiance = generate_dates_with_irradiance(start_date, end_date, delta_type='minutes',
+dates_with_irradiance =   generate_dates_with_irradiance(start_date, end_date, delta_type='minutes',
                                                        delta_value=delta_value)
 
 sp = SolarPanel()
