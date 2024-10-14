@@ -307,13 +307,13 @@ class SolarBatteryApp:
         btn_container2.pack(pady=10)
 
         btn_calculate_tab2 = ttk.Button(btn_container2, text="Калькулювати", command=self.update_2)
-        btn_calculate_tab2.pack(pady=10)
+        btn_calculate_tab2.pack(side=ttk.LEFT, padx=5)
 
         btn_clear_tab2 = ttk.Button(btn_container2, text="Очистити графік", command=self.clear_graph_tab2)
-        btn_clear_tab2.pack(pady=5)
+        btn_clear_tab2.pack(side=ttk.LEFT, padx=5)
 
         btn_stop_tab2 = ttk.Button(btn_container2, text="Зупинити", command=self.stop_update_tab2)
-        btn_stop_tab2.pack(pady=5)
+        btn_stop_tab2.pack(side=ttk.LEFT, padx=5)
 
         # Right container (graph and dynamic buttons for devices)
         right_container2 = ttk.Frame(pane2)
