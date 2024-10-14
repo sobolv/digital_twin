@@ -59,7 +59,7 @@ class SolarBatteryApp:
         pane1.pack(fill='both', expand=True)
 
         # Left container (inputs and sliders)
-        left_container1 = ttk.Frame(pane1, style="Custom.TFrame", width=300)
+        left_container1 = ttk.Frame(pane1, style="Custom.TFrame", width=500)
         left_container1.pack_propagate(False)
         pane1.add(left_container1)
 
@@ -152,7 +152,7 @@ class SolarBatteryApp:
 
         # Error label
         self.error_label = ttk.Label(left_container1, text="", font=(font_name, font_size), background="#7D8A8B",
-                                     foreground="red")
+                                     foreground="#D60000")
         self.error_label.pack(pady=10)
 
         # Buttons
@@ -181,7 +181,7 @@ class SolarBatteryApp:
         pane2.pack(fill='both', expand=True)
 
         # Left container (date picker, sliders, etc.)
-        left_container2 = ttk.Frame(pane2, style="Custom.TFrame", width=300)
+        left_container2 = ttk.Frame(pane2, style="Custom.TFrame", width=500)
         left_container2.pack_propagate(False)
         pane2.add(left_container2)
 
@@ -377,6 +377,8 @@ class SolarBatteryApp:
             load = float(self.load_var.get())
             if load < 0:
                 raise ValueError("Постійне навантаження повинно бути >= 0.")
+            elif load*220 > 4000:
+                raise ValueError("Споживання перевищує можливості інвертора")
 
             sun_ray_angle = float(self.sun_ray_angle_var.get())
             if(sun_ray_angle < 0):
