@@ -70,8 +70,8 @@ class SolarBatteryApp:
         pane1.add(left_container1)
 
         # Сонячна панель section
-        ttk.Label(left_container1, text="Сонячна панель", font=(font_name, font_size, 'bold'), foreground="white",
-                  background="#7D8A8B").pack(pady=5)
+        ttk.Label(left_container1, text="Сонячна панель", font=(font_name, 12, 'bold'), foreground="white",
+                  background="#7D8A8B", padding=(0, 15, 0, 5)).pack(pady=5)
 
         # Option menu for units
         ttk.Label(left_container1, text="Одиниця виміру часу", font=(font_name, font_size), foreground="white",
@@ -119,8 +119,8 @@ class SolarBatteryApp:
         panel_temp_entry.pack(pady=5)
 
         # Акумулятор section
-        ttk.Label(left_container1, text="Акумулятор", font=(font_name, font_size, 'bold'), foreground="white",
-                  background="#7D8A8B").pack(pady=5)
+        ttk.Label(left_container1, text="Акумулятор", font=(font_name, 12, 'bold'), foreground="white",
+                  background="#7D8A8B", padding=(0, 15, 0, 5)).pack(pady=5)
 
         # Number input for charge cycles
         ttk.Label(left_container1, text="Кількість циклів заряду", font=(font_name, font_size), foreground="white",
@@ -139,6 +139,9 @@ class SolarBatteryApp:
         self.charge_label = ttk.Label(left_container1, text="Заряд акумулятора, %", font=(font_name, font_size),
                                       foreground="white", background="#7D8A8B")
         self.charge_label.pack(pady=5)
+
+        ttk.Label(left_container1, text="Інвертор", font=(font_name, 12, 'bold'), foreground="white",
+                  background="#7D8A8B", padding=(0, 15, 0, 5)).pack(pady=5)
 
         # Навантаження section
         ttk.Label(left_container1, text="Навантаження", font=(font_name, font_size), foreground="white",
@@ -162,14 +165,19 @@ class SolarBatteryApp:
         self.error_label.pack(pady=10)
 
         # Buttons
-        btn_calculate = ttk.Button(left_container1, text="Калькулювати", command=self.calculate)
-        btn_calculate.pack(pady=10)
 
-        btn_clear = ttk.Button(left_container1, text="Очистити графік", command=self.clear_graph)
-        btn_clear.pack(pady=5)
+        btn_container = ttk.Frame(left_container1, style="Custom.TFrame")
+        btn_container.pack(pady=10)
 
-        btn_stop = ttk.Button(left_container1, text="Зупинити", command=self.stop_update)
-        btn_stop.pack(pady=5)
+
+        btn_calculate = ttk.Button(btn_container, text="Калькулювати", command=self.calculate)
+        btn_calculate.pack(side=ttk.LEFT, padx=5)
+
+        btn_clear = ttk.Button(btn_container, text="Очистити графік", command=self.clear_graph)
+        btn_clear.pack(side=ttk.LEFT, padx=5)
+
+        btn_stop = ttk.Button(btn_container, text="Зупинити", command=self.stop_update)
+        btn_stop.pack(side=ttk.LEFT, padx=5)
 
         # Right container (single graph)
         right_container1 = ttk.Frame(pane1)
@@ -225,7 +233,7 @@ class SolarBatteryApp:
         panel_temp2_entry.pack(pady=5)
 
         # Devices section
-        ttk.Label(left_container2, text="Devices", font=(font_name, font_size, 'bold'), foreground="white",
+        ttk.Label(left_container2, text="Devices", font=(font_name, 12, 'bold'), foreground="white",
                   background="#7D8A8B").pack(pady=10)
 
         # Container for device inputs and buttons
