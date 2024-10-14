@@ -110,6 +110,7 @@ class Kettle:
                 self.current_time += 1
             elif time_delta == 1:
                 self.current_time += 3600
+                return (self.NOMINAL_POWER/3600)*self.time
             return self.NOMINAL_POWER / time_delta
         return 0
 

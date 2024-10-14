@@ -382,7 +382,7 @@ class SolarBatteryApp:
             self.error_label.pack(pady=10)
             return
 
-        if panel_temp2_var <= 0 or shadow_slider <= 0:
+        if panel_temp2_var <= 0 or shadow_slider < 0:
             self.error_label = ttk.Label(self.tab2, text="Error: All values must be positive numbers.",
                                          foreground="red")
             self.error_label.pack(pady=10)
@@ -410,7 +410,7 @@ class SolarBatteryApp:
         power, charge_in_percent, voltage, charge_cycles_return = self.controller_2.process_from_ui(irradiance,
                                                                                                     shadow_slider,
                                                                                                     panel_temp2_var,
-                                                                                                    time_delta)  # Charging
+                                                                                                    time_delta, 40, 40)  # Charging
 
         total_draw = 0
         for device in self.device_list:
