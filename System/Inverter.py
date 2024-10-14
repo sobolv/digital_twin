@@ -29,7 +29,12 @@ class Inverter:
         # print("Total power: " + str(power) + " Battery: " + str(charge_in_percent) + " Voltage: " + str(voltage))
 
     def power_with_load(self, current_load, time_delta):
-        power = current_load * self.MIN_NOMINAL_OUTPUT_VOLTAGE / time_delta
+        power = current_load / time_delta
+        charge_in_percent, voltage = self.battery.discharge(power)
+        return power, charge_in_percent, voltage
+
+    def power_with_load_amps(self, current_amp_draw, time_delta):
+        power = current_amp_draw * self.MIN_NOMINAL_OUTPUT_VOLTAGE / time_delta
         charge_in_percent, voltage = self.battery.discharge(power)
         return power, charge_in_percent, voltage
 

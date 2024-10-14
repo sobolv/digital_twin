@@ -8,6 +8,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from ttkbootstrap.widgets import DateEntry
 
 from System.devices import HairDryer, Fridge, Lamp, Microwave, TV, Kettle
+from System.emulator import emulator
 
 font_size = 10
 font_name = "Roboto"
@@ -23,14 +24,19 @@ class SolarBatteryApp:
     def __init__(self, root):
         self.device_list = list()
         self.plot_x_array: list = list()
+        self.plot_x_array_2: list = list()
         self.plot_y_array: list = list()
+        self.plot_y_array_2: list = list()
+        self.plot_power_array_2 = []
         self.root = root
         self.root.title("Цифровий двійник лабораторного стенду сонячної панелі")
 
         self.stop_event = threading.Event()
+        self.stop_event_2 = threading.Event()
 
         self.fig, self.ax = plt.subplots(figsize=(5, 5))
         self.fig2, self.ax2 = plt.subplots(figsize=(5, 5))
+        self.fig3, self.ax3 = plt.subplots(figsize=(5, 5))
 
         self.setup_tabs()
         self.setup_tab1_ui()
@@ -48,7 +54,7 @@ class SolarBatteryApp:
 
         # Tab 2 setup
         self.tab2 = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab2, text="Tab 2")
+        self.notebook.add(self.tab2, text="Моделювання навантаження пристроїв")
 
     def setup_tab1_ui(self):
         style = ttk.Style()
@@ -185,6 +191,14 @@ class SolarBatteryApp:
         left_container2.pack_propagate(False)
         pane2.add(left_container2)
 
+        # Option menu for units
+        ttk.Label(left_container2, text="Одиниця виміру часу", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B").pack(pady=5)
+        self.solar_unit_var_2 = ttk.StringVar(value="година")
+        self.solar_unit_menu_2 = ttk.OptionMenu(left_container2, self.solar_unit_var_2, "година", "година", "хвилина",
+                                              "секунда")
+        self.solar_unit_menu_2.pack(pady=5)
+
         # Start date label and picker
         ttk.Label(left_container2, text="Start Date (YYYY-MM-DD HH:MM)", font=(font_name, font_size),
                   foreground="white", background="#7D8A8B").pack(pady=5)
@@ -279,7 +293,7 @@ class SolarBatteryApp:
         ttk.Button(devices_frame, text="+", command=self.add_kettle).grid(row=5, column=5, padx=5)
 
         # Buttons
-        btn_calculate_tab2 = ttk.Button(left_container2, text="Calculate", command=self.calculate_tab2)
+        btn_calculate_tab2 = ttk.Button(left_container2, text="Calculate", command=self.update_2)
         btn_calculate_tab2.pack(pady=10)
 
         btn_clear_tab2 = ttk.Button(left_container2, text="Clear Chart", command=self.clear_graph_tab2)
@@ -293,7 +307,9 @@ class SolarBatteryApp:
         pane2.add(right_container2)
 
         self.canvas2 = FigureCanvasTkAgg(self.fig2, master=right_container2)
-        self.canvas2.get_tk_widget().pack(side=ttk.TOP, fill=ttk.BOTH, expand=True)
+        self.canvas2.get_tk_widget().pack(side=ttk.LEFT, fill=ttk.BOTH, expand=True)
+        self.canvas3 = FigureCanvasTkAgg(self.fig3, master=right_container2)
+        self.canvas3.get_tk_widget().pack(side=ttk.RIGHT, fill=ttk.BOTH, expand=True)
 
         # Device buttons
         self.device_buttons_frame = ttk.Frame(right_container2)
@@ -348,17 +364,121 @@ class SolarBatteryApp:
         del self.device_list[index]
         self.update_device_buttons()
 
+    def update_2(self):
+        self.stop_event_2.clear()
+        self.calculate_tab2()
+    counter = 0
+
     def calculate_tab2(self):
-        # Implement the chart drawing logic
-        pass
+
+        try:
+            panel_temp2_var = float(self.panel_temp2_var.get())
+            shadow_slider = float(self.shadow_slider.get()) / 100
+            start_date = self.start_date.entry.get()
+            start_time = self.start_time.get()
+        except ValueError as e:
+            # Show error message if any field is not a valid number
+            self.error_label = ttk.Label(self.tab2, text="Error: Please enter valid numeric values.", foreground="red")
+            self.error_label.pack(pady=10)
+            return
+
+        if panel_temp2_var <= 0 or shadow_slider <= 0:
+            self.error_label = ttk.Label(self.tab2, text="Error: All values must be positive numbers.",
+                                         foreground="red")
+            self.error_label.pack(pady=10)
+            return
+
+        combined_datetime = datetime.strptime(f"{start_date} {start_time}", "%d.%m.%Y %H:%M")
+        if self.counter is 0:
+            self.current_time_2 = combined_datetime
+            self.counter = 1
+
+
+        # Convert time unit
+        chosen_time_unit = self.solar_unit_var_2.get()
+        if chosen_time_unit == "година":
+            time_delta = 1
+            self.current_time_2 += timedelta(hours=1)
+        elif chosen_time_unit == "хвилина":
+            time_delta = 60
+            self.current_time_2 += timedelta(minutes=1)
+        else:
+            time_delta = 3600
+            self.current_time_2 += timedelta(seconds=1)
+
+        irradiance = emulator.get_solar_irradiance_for_datetime(self.current_time_2) * 1000  # TODO delta_time?
+        power, charge_in_percent, voltage, charge_cycles_return = self.controller_2.process_from_ui(irradiance,
+                                                                                                    shadow_slider,
+                                                                                                    panel_temp2_var,
+                                                                                                    time_delta)  # Charging
+
+        total_draw = 0
+        for device in self.device_list:
+            total_draw += device.power_on(time_delta) # Calculate total power draw at given time of powered on devices
+        print(f"Total draw: {total_draw}, Total power: {power}, Total charge: {charge_in_percent}")
+        power_draw, charge_in_percent, voltage = self.inverter_2.power_with_load(total_draw, time_delta) # Discharge
+
+
+        # Check if the length exceeds the limit, remove the oldest data if necessary
+        max_points = 50
+        if len(self.plot_x_array_2) > max_points:
+            self.plot_x_array_2.pop(0)  # Remove the first (oldest) element from the x array
+            self.plot_y_array_2.pop(0)  # Remove the first (oldest) element from the y array
+            self.plot_power_array_2.pop(0)  # Remove the first (oldest) element from the y array
+
+        self.plot_x_array_2.append(self.current_time_2)
+        self.plot_y_array_2.append(charge_in_percent)
+        self.plot_power_array_2.append(power)
+
+        # Update the graph
+        self.ax2.clear()
+        self.ax3.clear()  # Clear the power plot
+        self.ax2.plot(self.plot_x_array_2, self.plot_y_array_2)
+        self.ax2.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
+        for label in self.ax2.get_xticklabels():
+            label.set_rotation(90)
+
+        # Maintain the scale by setting the limits manually
+        self.ax2.set_xlim(
+            [self.plot_x_array_2[0], self.plot_x_array_2[-1]])  # Adjust x-axis limits to the current data range
+        self.ax2.set_ylim([-10, 110])  # Adjust y-axis limits, assuming charge_in_percent is between 0 and 100
+        # Use tight_layout to avoid label overlap
+        self.ax2.set_title('Charge in Percentage')
+        self.ax2.set_ylabel('Charge (%)')
+        self.ax2.legend()
+
+        # Create a new subplot for power
+        self.ax3.plot(self.plot_x_array_2, self.plot_power_array_2, color='orange', label='Power (W)')
+        self.ax3.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
+        for label in self.ax3.get_xticklabels():
+            label.set_rotation(90)
+        self.ax3.set_xlim([self.plot_x_array_2[0], self.plot_x_array_2[-1]])
+        self.ax3.set_ylim([0, max(self.plot_power_array_2) * 1.1])  # Adjust y-axis limits for power
+        self.ax3.set_title('Power Generated from Solar Panel')
+        self.ax3.set_ylabel('Power (W)')
+        self.ax3.legend()
+
+        self.fig2.tight_layout()
+        self.canvas2.draw()
+        self.canvas3.draw()
+
+        # Recursively call the update function every second if not stopped
+        if not self.stop_event_2.is_set():
+            self.root.after(1000, self.calculate_tab2)
 
     def clear_graph_tab2(self):
-        # Implement the graph clearing logic
+        self.ax2.clear()  # Clear the data but leave the axes
+        self.ax2.set_title("Графік очищено")  # Optionally, show some placeholder message
+        self.canvas2.draw()
+        self.canvas3.draw()
+        self.error_label.config(text="")  # Clear previous error message
+        self.plot_x_array_2 = []
+        self.plot_y_array_2 = []
+        self.plot_power_array_2 = []
         pass
 
     def stop_update_tab2(self):
-        # Implement the stop updating logic
-        pass
+        self.stop_event_2.set()
 
     def update_calculations(self):
         try:
@@ -405,7 +525,7 @@ class SolarBatteryApp:
                                                                                                       time_delta,
                                                                                                       sun_ray_angle,
                                                                                                       panel_angle)
-            power_draw, charge_in_percent, voltage = self.inverter.power_with_load(load, time_delta)
+            power_draw, charge_in_percent, voltage = self.inverter.power_with_load_amps(load, time_delta)
 
             self.plot_x_array.append(self.current_time)
             self.plot_y_array.append(charge_in_percent)
@@ -463,6 +583,12 @@ class SolarBatteryApp:
         self.remote_meter = RemoteMeter()
         self.controller = ChargeController(self.panel, self.battery, self.remote_meter)
         self.inverter = Inverter(self.battery)
+
+        self.panel_2 = SolarPanel()
+        self.battery_2 = Battery()
+        self.remote_meter_2 = RemoteMeter()
+        self.controller_2 = ChargeController(self.panel_2, self.battery_2, self.remote_meter_2)
+        self.inverter_2 = Inverter(self.battery_2)
         self.current_time = datetime.now()
 
 

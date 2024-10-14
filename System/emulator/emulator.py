@@ -1,3 +1,4 @@
+import locale
 import random
 from datetime import datetime, timedelta
 
@@ -104,16 +105,35 @@ def generate_dates_with_irradiance(start, end, delta_type='minutes', delta_value
     return date_irradiance_dict
 
 
-# Example usage
-start_date = '2024-10-06 04:00'
-end_date = '2024-10-07 20:00'
-delta_value = 60  # 60 minutes
+def get_solar_irradiance_for_datetime(date_time):
+    # Save the current locale setting
+    current_locale = locale.getlocale(locale.LC_TIME)
+    # Set locale to English for the month name formatting
+    locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
 
-dates_with_irradiance =   generate_dates_with_irradiance(start_date, end_date, delta_type='minutes',
-                                                       delta_value=delta_value)
+    month_name = date_time.strftime("%B")
+    hour_of_day = date_time.hour
+    # Restore the previous locale setting
+    locale.setlocale(locale.LC_TIME, current_locale)
+    # Check if the datetime is within daylight hours
+    if is_daylight(month_name, date_time):
+        irradiance = get_irradiance_range(month_name, hour_of_day)
+    else:
+        irradiance = 0  # No sun during non-daylight hours
 
-sp = SolarPanel()
-# Print result
-for date, irradiance in dates_with_irradiance.items():
-    power = sp.generate_power_from_ui(irradiance * 1000, 0.1, 25, 1)
-    print(f"{date}: {irradiance:.4f} {power:.4f}")
+    return irradiance
+
+
+# # Example usage
+# start_date = '2024-10-06 04:00'
+# end_date = '2024-10-07 20:00'
+# delta_value = 60  # 60 minutes
+#
+# dates_with_irradiance = generate_dates_with_irradiance(start_date, end_date, delta_type='minutes',
+#                                                        delta_value=delta_value)
+#
+# sp = SolarPanel()
+# # Print result
+# for date, irradiance in dates_with_irradiance.items():
+#     power = sp.generate_power_from_ui(irradiance * 1000, 0.1, 25, 1)
+#     print(f"{date}: {irradiance:.4f} {power:.4f}")
