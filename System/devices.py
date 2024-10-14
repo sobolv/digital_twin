@@ -38,7 +38,10 @@ class Fridge:
 
     def power_on(self, time_delta):
         if self.current_time <= self.MAX_START_TIME:
-            power = random.randint(self.MIN_START_POWER, self.MAX_START_POWER) / time_delta
+            if time_delta == 1 or time_delta == 60:
+                power = (random.randint(self.MIN_START_POWER, self.MAX_START_POWER) / 3600) * 2
+            else:
+                power = random.randint(self.MIN_START_POWER, self.MAX_START_POWER) / time_delta
         else:
             power = self.NOMINAL_POWER / time_delta
 
