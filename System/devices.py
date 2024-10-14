@@ -10,6 +10,9 @@ class HairDryer:
         self.temperature = temperature
         self.speed = speed
 
+    def get_image_path(self):
+        return "devices_icons/hair-dryer.png"
+
     def power_on(self, time_delta):
         power_map = {
             (1, 1): 700,
@@ -36,6 +39,9 @@ class Fridge:
     def __init__(self):
         self.current_time = 0
 
+    def get_image_path(self):
+        return "devices_icons/refrigerator.png"
+
     def power_on(self, time_delta):
         if self.current_time <= self.MAX_START_TIME:
             if time_delta == 1 or time_delta == 60:
@@ -61,6 +67,9 @@ class Lamp:
     MODEL = "IKEA ARSTID + LED lamp"
     NOMINAL_POWER = 8
 
+    def get_image_path(self):
+        return "devices_icons/light-bulb.png"
+
     def power_on(self, time_delta):
         return self.NOMINAL_POWER / time_delta
 
@@ -71,6 +80,9 @@ class Lamp:
 class Microwave:
     MODEL = "Samsung MW3000AM MS20A3010AL"
     MODE = {120, 250, 380, 500, 700}
+
+    def get_image_path(self):
+        return "devices_icons/microwave.png"
 
     def __init__(self, mode: int):
         self.mode = mode
@@ -87,6 +99,9 @@ class TV:
     MAX_POWER = 140
     NOMINAL_POWER = 108
     STAND_BY_MODE_POWER = 0.5
+
+    def get_image_path(self):
+        return "devices_icons/television.png"
 
     def power_on(self, time_delta):
         return random.randint(self.NOMINAL_POWER, self.MAX_POWER) / time_delta
@@ -105,6 +120,9 @@ class Kettle:
         self.time = (4.186 * amount_of_water * (100 - start_temperature)) / self.NOMINAL_POWER
         self.current_time = 0
 
+    def get_image_path(self):
+        return "devices_icons/kettle.png"
+
     def power_on(self, time_delta):
         if self.current_time < self.time:
             if time_delta == 60:
@@ -113,7 +131,7 @@ class Kettle:
                 self.current_time += 1
             elif time_delta == 1:
                 self.current_time += 3600
-                return (self.NOMINAL_POWER/3600)*self.time
+                return (self.NOMINAL_POWER / 3600) * self.time
             return self.NOMINAL_POWER / time_delta
         return 0
 

@@ -28,8 +28,8 @@ class Inverter:
         charge_in_percent, voltage = self.battery.discharge(power)
         # print("Total power: " + str(power) + " Battery: " + str(charge_in_percent) + " Voltage: " + str(voltage))
 
-    def power_with_load(self, current_load, time_delta):
-        power = current_load / time_delta
+    def power_with_load(self, current_load):
+        power = current_load
         charge_in_percent, voltage = self.battery.discharge(power)
         return power, charge_in_percent, voltage
 

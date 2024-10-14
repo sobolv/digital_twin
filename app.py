@@ -1,5 +1,6 @@
 import threading
 from datetime import datetime, timedelta
+from tkinter import PhotoImage
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -88,7 +89,8 @@ class SolarBatteryApp:
         solar_irradiance_entry = ttk.Entry(left_container1, textvariable=self.solar_irradiance_var)
         solar_irradiance_entry.pack(pady=5)
 
-        ttk.Label(left_container1, text="Кут нахилу сонячних променів, °", font=(font_name, font_size), foreground="white",
+        ttk.Label(left_container1, text="Кут нахилу сонячних променів, °", font=(font_name, font_size),
+                  foreground="white",
                   background="#7D8A8B").pack(pady=5)
         self.sun_ray_angle_var = ttk.StringVar()
         sun_ray_angle_entry = ttk.Entry(left_container1, textvariable=self.sun_ray_angle_var)
@@ -154,7 +156,6 @@ class SolarBatteryApp:
         ttk.Label(left_container1, text="Постійне навантаження, А", font=(font_name, font_size), foreground="white",
                   background="#7D8A8B").pack(pady=5)
 
-
         self.load_var = ttk.StringVar()
         load_entry = ttk.Entry(left_container1, textvariable=self.load_var)
         load_entry.pack(pady=5)
@@ -168,7 +169,6 @@ class SolarBatteryApp:
 
         btn_container = ttk.Frame(left_container1, style="Custom.TFrame")
         btn_container.pack(pady=10)
-
 
         btn_calculate = ttk.Button(btn_container, text="Калькулювати", command=self.calculate)
         btn_calculate.pack(side=ttk.LEFT, padx=5)
@@ -206,7 +206,7 @@ class SolarBatteryApp:
                   background="#7D8A8B").pack(pady=5)
         self.solar_unit_var_2 = ttk.StringVar(value="година")
         self.solar_unit_menu_2 = ttk.OptionMenu(left_container2, self.solar_unit_var_2, "година", "година", "хвилина",
-                                              "секунда")
+                                                "секунда")
         self.solar_unit_menu_2.pack(pady=5)
 
         # Start date label and picker
@@ -303,30 +303,33 @@ class SolarBatteryApp:
         ttk.Button(devices_frame, text="+", command=self.add_kettle).grid(row=5, column=5, padx=5)
 
         # Buttons
-        btn_container2 = ttk.Frame(left_container2, style="Custom.TFrame")
-        btn_container2.pack(pady=10)
+        self.btn_container2 = ttk.Frame(left_container2, style="Custom.TFrame")
+        self.btn_container2.pack(pady=10)
 
-        btn_calculate_tab2 = ttk.Button(btn_container2, text="Калькулювати", command=self.update_2)
+        btn_calculate_tab2 = ttk.Button(self.btn_container2, text="Калькулювати", command=self.update_2)
         btn_calculate_tab2.pack(side=ttk.LEFT, padx=5)
 
-        btn_clear_tab2 = ttk.Button(btn_container2, text="Очистити графік", command=self.clear_graph_tab2)
+        btn_clear_tab2 = ttk.Button(self.btn_container2, text="Очистити графік", command=self.clear_graph_tab2)
         btn_clear_tab2.pack(side=ttk.LEFT, padx=5)
 
-        btn_stop_tab2 = ttk.Button(btn_container2, text="Зупинити", command=self.stop_update_tab2)
+        btn_stop_tab2 = ttk.Button(self.btn_container2, text="Зупинити", command=self.stop_update_tab2)
         btn_stop_tab2.pack(side=ttk.LEFT, padx=5)
 
         # Right container (graph and dynamic buttons for devices)
         right_container2 = ttk.Frame(pane2)
         pane2.add(right_container2)
+        canvas_container = ttk.Frame(right_container2)
 
-        self.canvas2 = FigureCanvasTkAgg(self.fig2, master=right_container2)
+        self.canvas2 = FigureCanvasTkAgg(self.fig2, master=canvas_container)
         self.canvas2.get_tk_widget().pack(side=ttk.LEFT, fill=ttk.BOTH, expand=True)
-        self.canvas3 = FigureCanvasTkAgg(self.fig3, master=right_container2)
+        self.canvas3 = FigureCanvasTkAgg(self.fig3, master=canvas_container)
         self.canvas3.get_tk_widget().pack(side=ttk.RIGHT, fill=ttk.BOTH, expand=True)
 
         # Device buttons
-        self.device_buttons_frame = ttk.Frame(right_container2)
-        self.device_buttons_frame.pack(side=ttk.BOTTOM, fill=ttk.X)
+        self.device_buttons_frame = ttk.Frame(right_container2, height=70)
+        self.device_buttons_frame.pack(side=ttk.BOTTOM, fill=ttk.X, expand=True)
+
+        canvas_container.pack(side=ttk.TOP, fill=ttk.BOTH, expand=True, ipady=200)
 
     def add_hairdryer(self):
         temperature = int(self.hairdryer_temp_var.get())
@@ -357,11 +360,29 @@ class SolarBatteryApp:
         self.update_device_buttons()
 
     def add_kettle(self):
-        water_amount = int(self.kettle_water_amount_var.get())
-        start_temp = int(self.kettle_start_temp_var.get())
+        try:
+            water_amount = int(self.kettle_water_amount_var.get())
+            start_temp = int(self.kettle_start_temp_var.get())
+        except ValueError:
+            self.error_label = ttk.Label(self.btn_container2, text="Error: Перевірте введені дані",
+                                         foreground="#D60000", background="#7D8A8B")
+            self.error_label.pack(pady=10)
+            self.btn_container2.after(3000, self.remove_error_label)
+            return
+        if water_amount <= 0:
+            self.error_label = ttk.Label(self.btn_container2, text="Error: Чайник не може бути порожнім",
+                                         foreground="#D60000", background="#7D8A8B")
+            self.error_label.pack(pady=10)
+            self.btn_container2.after(3000, self.remove_error_label)
+            return
         kettle = Kettle(water_amount, start_temp)
         self.device_list.append(kettle)
         self.update_device_buttons()
+
+    def remove_error_label(self):
+        if self.error_label:
+            self.error_label.destroy()
+            self.error_label = None
 
     def update_device_buttons(self):
         # Clear the current buttons
@@ -370,7 +391,10 @@ class SolarBatteryApp:
 
         # Add a button for each device in the list
         for i, device in enumerate(self.device_list):
-            btn = ttk.Button(self.device_buttons_frame, text=str(device), command=lambda i=i: self.remove_device(i))
+            device_image = PhotoImage(file=device.get_image_path(), width=64, height=64)
+            btn = ttk.Button(self.device_buttons_frame, image=device_image, text=str(device),
+                             command=lambda i=i: self.remove_device(i))
+            btn.image = device_image
             btn.pack(side=ttk.LEFT, padx=5)
 
     def remove_device(self, index):
@@ -380,6 +404,7 @@ class SolarBatteryApp:
     def update_2(self):
         self.stop_event_2.clear()
         self.calculate_tab2()
+
     counter = 0
 
     def calculate_tab2(self):
@@ -391,21 +416,23 @@ class SolarBatteryApp:
             start_time = self.start_time.get()
         except ValueError as e:
             # Show error message if any field is not a valid number
-            self.error_label = ttk.Label(self.tab2, text="Error: Please enter valid numeric values.", foreground="red")
+            self.error_label = ttk.Label(self.btn_container2, text="Error: Перевірте введені дані",
+                                         foreground="#D60000", background="#7D8A8B")
             self.error_label.pack(pady=10)
+            self.btn_container2.after(3000, self.remove_error_label)
             return
 
         if panel_temp2_var <= 0 or shadow_slider < 0:
-            self.error_label = ttk.Label(self.tab2, text="Error: All values must be positive numbers.",
-                                         foreground="red")
+            self.error_label = ttk.Label(self.btn_container2, text="Error: Перевірте введені дані",
+                                         foreground="#D60000", background="#7D8A8B")
             self.error_label.pack(pady=10)
+            self.btn_container2.after(3000, self.remove_error_label)
             return
 
         combined_datetime = datetime.strptime(f"{start_date} {start_time}", "%d.%m.%Y %H:%M")
-        if self.counter is 0:
+        if self.counter == 0:
             self.current_time_2 = combined_datetime
             self.counter = 1
-
 
         # Convert time unit
         chosen_time_unit = self.solar_unit_var_2.get()
@@ -419,18 +446,23 @@ class SolarBatteryApp:
             time_delta = 3600
             self.current_time_2 += timedelta(seconds=1)
 
-        irradiance = emulator.get_solar_irradiance_for_datetime(self.current_time_2) * 1000  # TODO delta_time?
+        irradiance = emulator.get_solar_irradiance_for_datetime(self.current_time_2) * 1000
         power, charge_in_percent, voltage, charge_cycles_return = self.controller_2.process_from_ui(irradiance,
                                                                                                     shadow_slider,
                                                                                                     panel_temp2_var,
-                                                                                                    time_delta, 40, 40)  # Charging
+                                                                                                    time_delta, 40,
+                                                                                                    40)  # Charging
 
         total_draw = 0
         for device in self.device_list:
-            total_draw += device.power_on(time_delta) # Calculate total power draw at given time of powered on devices
+            total_draw += device.power_on(time_delta)  # Calculate total power draw at given time of powered on devices
+        if total_draw > 3500 / time_delta:
+            self.error_label = ttk.Label(self.btn_container2, text="Error: Завелике споживання >3.5кВт",
+                                         foreground="#D60000", background="#7D8A8B")
+            self.error_label.pack(pady=10)
+            self.btn_container2.after(1000, self.remove_error_label)
         print(f"Total draw: {total_draw}, Total power: {power}, Total charge: {charge_in_percent}")
-        power_draw, charge_in_percent, voltage = self.inverter_2.power_with_load(total_draw, time_delta) # Discharge
-
+        power_draw, charge_in_percent, voltage = self.inverter_2.power_with_load(total_draw)  # Discharge
 
         # Check if the length exceeds the limit, remove the oldest data if necessary
         max_points = 50
@@ -456,9 +488,9 @@ class SolarBatteryApp:
             [self.plot_x_array_2[0], self.plot_x_array_2[-1]])  # Adjust x-axis limits to the current data range
         self.ax2.set_ylim([-10, 110])  # Adjust y-axis limits, assuming charge_in_percent is between 0 and 100
         # Use tight_layout to avoid label overlap
-        self.ax2.set_title('Charge in Percentage')
-        self.ax2.set_ylabel('Charge (%)')
-        self.ax2.legend()
+        self.ax2.set_title('Заряд у відсотках')
+        self.ax2.set_ylabel('Заряд (%)')
+        # self.ax2.legend()
 
         # Create a new subplot for power
         self.ax3.plot(self.plot_x_array_2, self.plot_power_array_2, color='orange', label='Power (W)')
@@ -467,9 +499,9 @@ class SolarBatteryApp:
             label.set_rotation(90)
         self.ax3.set_xlim([self.plot_x_array_2[0], self.plot_x_array_2[-1]])
         self.ax3.set_ylim([0, max(self.plot_power_array_2) * 1.1])  # Adjust y-axis limits for power
-        self.ax3.set_title('Power Generated from Solar Panel')
-        self.ax3.set_ylabel('Power (W)')
-        self.ax3.legend()
+        self.ax3.set_title('Генерація сонячної панелі')
+        self.ax3.set_ylabel('Потужність (W)')
+        # self.ax3.legend()
 
         self.fig2.tight_layout()
         self.canvas2.draw()
@@ -481,10 +513,12 @@ class SolarBatteryApp:
 
     def clear_graph_tab2(self):
         self.ax2.clear()  # Clear the data but leave the axes
+        self.ax3.clear()
         self.ax2.set_title("Графік очищено")  # Optionally, show some placeholder message
+        self.ax3.set_title("Графік очищено")  # Optionally, show some placeholder message
         self.canvas2.draw()
         self.canvas3.draw()
-        self.error_label.config(text="")  # Clear previous error message
+        # self.error_label.config(text="")  # Clear previous error message
         self.plot_x_array_2 = []
         self.plot_y_array_2 = []
         self.plot_power_array_2 = []
@@ -510,11 +544,11 @@ class SolarBatteryApp:
             load = float(self.load_var.get())
             if load < 0:
                 raise ValueError("Постійне навантаження повинно бути >= 0.")
-            elif load*220 > 4000:
+            elif load * 220 > 4000:
                 raise ValueError("Споживання перевищує можливості інвертора")
 
             sun_ray_angle = float(self.sun_ray_angle_var.get())
-            if(sun_ray_angle < 0):
+            if sun_ray_angle < 0:
                 raise ValueError("Кут нахилу сонячних променів повинен бути >= 0.")
 
             panel_angle = float(self.panel_angle_var.get())
