@@ -5,6 +5,7 @@ from tkinter import PhotoImage
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import ttkbootstrap as ttk
+import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from ttkbootstrap.widgets import DateEntry
 
@@ -583,10 +584,10 @@ class SolarBatteryApp:
                 self.plot_x_array.pop(0)  # Remove the first (oldest) element from the x array
                 self.plot_y_array.pop(0)  # Remove the first (oldest) element from the y array
             # Perform calculation and update the UI
-            self.power_label.config(text="Генерація панелі: " + str(power) + " Вт")
-            self.voltage_label.config(text="Напруга: " + str(voltage) + "V")
-            self.charge_label.config(text="Заряд: " + str(charge_in_percent) + "%")
-            self.current_draw.config(text="Споживання " + str(power_draw) + "Вт")
+            self.power_label.config(text="Генерація панелі: " + str(np.round(power, 2)) + " Вт")
+            self.voltage_label.config(text="Напруга: " + str(np.round(voltage, 2)) + "V")
+            self.charge_label.config(text="Заряд: " + str(np.round(charge_in_percent, 2)) + "%")
+            self.current_draw.config(text="Споживання " + str(np.round(power_draw, 2)) + "Вт")
             # self.charge_cycles_entry.insert(0, charge_cycles_return)
 
             self.error_label.config(text="")  # Clear previous error message
