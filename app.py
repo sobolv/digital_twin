@@ -195,10 +195,12 @@ class SolarBatteryApp:
         pane2.pack(fill='both', expand=True)
 
         # Left container (date picker, sliders, etc.)
-        left_container2 = ttk.Frame(pane2, style="Custom.TFrame", width=500)
+        left_container2 = ttk.Frame(pane2, style="Custom.TFrame", width=600)
         left_container2.pack_propagate(False)
         pane2.add(left_container2)
 
+        ttk.Label(left_container2, text="Налаштування", font=(font_name, 12, 'bold'), foreground="white",
+                  background="#7D8A8B", padding=(0, 15, 0, 5)).pack(pady=10)
         # Option menu for units
         ttk.Label(left_container2, text="Одиниця виміру часу", font=(font_name, font_size), foreground="white",
                   background="#7D8A8B").pack(pady=5)
@@ -208,7 +210,7 @@ class SolarBatteryApp:
         self.solar_unit_menu_2.pack(pady=5)
 
         # Start date label and picker
-        ttk.Label(left_container2, text="Start Date (YYYY-MM-DD HH:MM)", font=(font_name, font_size),
+        ttk.Label(left_container2, text="Початкова дата (YYYY-MM-DD HH:MM)", font=(font_name, font_size),
                   foreground="white", background="#7D8A8B").pack(pady=5)
         self.start_date = DateEntry(left_container2, bootstyle="info", width=20)
         self.start_date.pack(pady=5)
@@ -217,7 +219,7 @@ class SolarBatteryApp:
         self.start_time.insert(0, "00:00")  # Default time
 
         # Shadow coefficient slider
-        ttk.Label(left_container2, text="Shadow Coefficient", font=(font_name, font_size), foreground="white",
+        ttk.Label(left_container2, text="Коефіцієнт затемнення", font=(font_name, font_size), foreground="white",
                   background="#7D8A8B").pack(pady=5)
         self.shadow_var = ttk.DoubleVar(value=0)
         self.shadow_slider = ttk.Scale(left_container2, from_=0, to=100, orient=ttk.HORIZONTAL,
@@ -226,31 +228,31 @@ class SolarBatteryApp:
         self.shadow_slider.pack(pady=5)
 
         # Panel temperature input
-        ttk.Label(left_container2, text="Panel Temperature (°C)", font=(font_name, font_size), foreground="white",
+        ttk.Label(left_container2, text="Температура панелі (°C)", font=(font_name, font_size), foreground="white",
                   background="#7D8A8B").pack(pady=5)
         self.panel_temp2_var = ttk.StringVar()
         panel_temp2_entry = ttk.Entry(left_container2, textvariable=self.panel_temp2_var)
         panel_temp2_entry.pack(pady=5)
 
         # Devices section
-        ttk.Label(left_container2, text="Devices", font=(font_name, 12, 'bold'), foreground="white",
-                  background="#7D8A8B").pack(pady=10)
+        ttk.Label(left_container2, text="Пристрої", font=(font_name, 12, 'bold'), foreground="white",
+                  background="#7D8A8B", padding=(0, 15, 0, 5)).pack(pady=10)
 
         # Container for device inputs and buttons
         devices_frame = ttk.Frame(left_container2, style="Custom.TFrame")
         devices_frame.pack(pady=5)
 
         # Hair Dryer input
-        ttk.Label(devices_frame, text="Hair Dryer", font=(font_name, font_size), foreground="white",
-                  background="#7D8A8B").grid(row=0, column=0, pady=5)
-        ttk.Label(devices_frame, text="Temperature", font=(font_name, font_size), foreground="white",
+        ttk.Label(devices_frame, text="Фен", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B", anchor="w").grid(row=0, column=0, pady=5, sticky="w")
+        ttk.Label(devices_frame, text="Температура", font=(font_name, font_size), foreground="white",
                   background="#7D8A8B").grid(row=0, column=1)
         self.hairdryer_temp_var = ttk.StringVar(value="1")
         self.hairdryer_temp = ttk.Combobox(devices_frame, textvariable=self.hairdryer_temp_var, values=["1", "2", "3"],
                                            width=5, state="readonly")
         self.hairdryer_temp.grid(row=0, column=2)
 
-        ttk.Label(devices_frame, text="Speed", font=(font_name, font_size), foreground="white",
+        ttk.Label(devices_frame, text="Швидкість", font=(font_name, font_size), foreground="white",
                   background="#7D8A8B").grid(row=0, column=3)
         self.hairdryer_speed_var = ttk.StringVar(value="1")
         self.hairdryer_speed = ttk.Combobox(devices_frame, textvariable=self.hairdryer_speed_var, values=["1", "2"],
@@ -260,18 +262,18 @@ class SolarBatteryApp:
         ttk.Button(devices_frame, text="+", command=self.add_hairdryer).grid(row=0, column=5, padx=5)
 
         # Fridge input
-        ttk.Label(devices_frame, text="Fridge", font=(font_name, font_size), foreground="white",
-                  background="#7D8A8B").grid(row=1, column=0, pady=5)
+        ttk.Label(devices_frame, text="Холодильник", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B", anchor="w").grid(row=1, column=0, pady=5, sticky="w")
         ttk.Button(devices_frame, text="+", command=self.add_fridge).grid(row=1, column=5, padx=5)
 
         # Lamp input
-        ttk.Label(devices_frame, text="Lamp", font=(font_name, font_size), foreground="white",
-                  background="#7D8A8B").grid(row=2, column=0, pady=5)
+        ttk.Label(devices_frame, text="LED лампа", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B", anchor="w").grid(row=2, column=0, pady=5, sticky="w")
         ttk.Button(devices_frame, text="+", command=self.add_lamp).grid(row=2, column=5, padx=5)
 
         # Microwave input
-        ttk.Label(devices_frame, text="Microwave", font=(font_name, font_size), foreground="white",
-                  background="#7D8A8B").grid(row=3, column=0, pady=5)
+        ttk.Label(devices_frame, text="Мікрохвильовка", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B", anchor="w").grid(row=3, column=0, pady=5, sticky="w")
         self.microwave_power_var = ttk.StringVar(value="120")
         self.microwave_power = ttk.Combobox(devices_frame, textvariable=self.microwave_power_var,
                                             values=["120", "250", "380", "500", "700"], width=5, state="readonly")
@@ -279,20 +281,20 @@ class SolarBatteryApp:
         ttk.Button(devices_frame, text="+", command=self.add_microwave).grid(row=3, column=5, padx=5)
 
         # TV input
-        ttk.Label(devices_frame, text="TV", font=(font_name, font_size), foreground="white",
-                  background="#7D8A8B").grid(row=4, column=0, pady=5)
+        ttk.Label(devices_frame, text="Телевізор", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B", anchor="w").grid(row=4, column=0, pady=5, sticky="w")
         ttk.Button(devices_frame, text="+", command=self.add_tv).grid(row=4, column=5, padx=5)
 
         # Kettle input
-        ttk.Label(devices_frame, text="Kettle", font=(font_name, font_size), foreground="white",
-                  background="#7D8A8B").grid(row=5, column=0, pady=5)
-        ttk.Label(devices_frame, text="Amount of Water", font=(font_name, font_size), foreground="white",
+        ttk.Label(devices_frame, text="Чайник", font=(font_name, font_size), foreground="white",
+                  background="#7D8A8B", anchor="w").grid(row=5, column=0, pady=5, sticky="w")
+        ttk.Label(devices_frame, text="Кількість води (мл)", font=(font_name, font_size), foreground="white",
                   background="#7D8A8B").grid(row=5, column=1)
         self.kettle_water_amount_var = ttk.StringVar()
         self.kettle_water_amount = ttk.Entry(devices_frame, textvariable=self.kettle_water_amount_var, width=5)
         self.kettle_water_amount.grid(row=5, column=2)
 
-        ttk.Label(devices_frame, text="Start Temp (°C)", font=(font_name, font_size), foreground="white",
+        ttk.Label(devices_frame, text="Початкова температура (°C)", font=(font_name, font_size), foreground="white",
                   background="#7D8A8B").grid(row=5, column=3)
         self.kettle_start_temp_var = ttk.StringVar()
         self.kettle_start_temp = ttk.Entry(devices_frame, textvariable=self.kettle_start_temp_var, width=5)
@@ -301,13 +303,16 @@ class SolarBatteryApp:
         ttk.Button(devices_frame, text="+", command=self.add_kettle).grid(row=5, column=5, padx=5)
 
         # Buttons
-        btn_calculate_tab2 = ttk.Button(left_container2, text="Calculate", command=self.update_2)
+        btn_container2 = ttk.Frame(left_container2, style="Custom.TFrame")
+        btn_container2.pack(pady=10)
+
+        btn_calculate_tab2 = ttk.Button(btn_container2, text="Калькулювати", command=self.update_2)
         btn_calculate_tab2.pack(pady=10)
 
-        btn_clear_tab2 = ttk.Button(left_container2, text="Clear Chart", command=self.clear_graph_tab2)
+        btn_clear_tab2 = ttk.Button(btn_container2, text="Очистити графік", command=self.clear_graph_tab2)
         btn_clear_tab2.pack(pady=5)
 
-        btn_stop_tab2 = ttk.Button(left_container2, text="Stop", command=self.stop_update_tab2)
+        btn_stop_tab2 = ttk.Button(btn_container2, text="Зупинити", command=self.stop_update_tab2)
         btn_stop_tab2.pack(pady=5)
 
         # Right container (graph and dynamic buttons for devices)
